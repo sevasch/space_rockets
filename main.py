@@ -8,13 +8,17 @@ from component_library import *
 
 
 if __name__ == '__main__':
-    WINDOW_HEIGHT = 480
-    WINDOW_WIDTH = 640
+    WINDOW_HEIGHT = 1300
+    WINDOW_WIDTH = 2000
 
-    s = Simulator(window_size=(WINDOW_WIDTH, WINDOW_HEIGHT), scale_init=0.01)
+    s = Simulator(window_size=(WINDOW_WIDTH, WINDOW_HEIGHT), scale_init=10)
     s.camera_center = Vector(0, 0)
-    s.add_entity(Planet(position_init=Vector(0, 0), radius=1000, density=5500, color=(0, 255, 0),
-                        athmosphere_radius=7000, athmosphere_density=1, athmosphere_color=(100, 100, 255)))
+    s.add_entity(Planet(position_init=Vector(0, 555), radius=500, density=5, color=(0, 255, 0),
+                        athmosphere_radius=550, athmosphere_density=1, athmosphere_color=(100, 100, 255)))
     # s.add_entity(Planet(position_init=Vector(0, 6600), radius=1, density=1000, color=(255, 0, 0)))
+    s.add_entity(Rocket(position_init=Vector(0, 0), orientation_init=0,
+                        mass=5, max_thrust=100,
+                        height=2, diameter=0.3, rel_height_pressure_center=0.3,
+                        throttle_fn=lambda: -1 * (s.joystick.get_axis(3) - 1) / 2, vector_fn=lambda:s. joystick.get_axis(0)))
 
     s.run()

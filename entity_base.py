@@ -57,6 +57,7 @@ class EntityBase(ABC):
         for component in self.components:
             component.update(simulator)
 
+        print(self._get_total_force())
         acceleration = self._get_total_force() / self._get_total_mass()
         acceleration_angular = self._get_total_torque() / self._get_moment_of_inertia()
         self.velocity += acceleration * time_step

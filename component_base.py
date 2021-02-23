@@ -45,14 +45,16 @@ class ComponentBase(ABC):
         for aerodynamic_force in self.aerodynamic_forces:
             total_force += aerodynamic_force
         for propulsion_force in self.propulsion_forces:
+            print(propulsion_force)
             total_force += propulsion_force
         return total_force
 
     def update(self, simulator):
-        self._compute_control_inputs()
 
         # check for interaction with environment
         self._reset_forces()
+        self._compute_control_inputs()
+
         for entity in simulator.entities:
             for component in entity.components:
                 if not component == self:

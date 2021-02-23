@@ -13,11 +13,15 @@ class Simulator:
         self.entities.append(entity)
 
     def position_from_physical(self, vec: Vector):
-        new_vec = (vec - self.camera_center) * self.scale + Vector(self.window_size[0], self.window_size[1]) / 2
-        return new_vec
+        return (vec - self.camera_center) * self.scale + Vector(self.window_size[0], self.window_size[1]) / 2
+
+    def polygon_from_physical(self, pts: []):
+        return [self.position_from_physical(pt) for pt in pts]
 
     def run(self):
         pygame.init()
+        self.joystick = pygame.joystick.Joystick(0)
+        self.joystick.init()
         self.window = pygame.display.set_mode((self.window_size[0], self.window_size[1]))
         clock = pygame.time.Clock()
         running = True

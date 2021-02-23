@@ -39,16 +39,24 @@ class Athmosphere(ComponentBase):
 
 
 class RocketBody(ComponentBase):
-    def __init__(self, entity, position_in_entity, orientation_in_entity=0, mass=1, moment_of_inertia=0, lift_coeff=0.5, drag_coeff=0.5, lift_area=1, drag_area=1):
+    def __init__(self, entity, position_in_entity, orientation_in_entity=0,
+                 mass=1, moment_of_inertia=0,
+                 height=10, diameter=2, rel_height_pressure_center=0.3,
+                 lift_coeff=0.5, drag_coeff=0.5, lift_area=1, drag_area=1,
+                 color=(255, 0, 0)):
         super().__init__(entity, position_in_entity, orientation_in_entity,
                          input_functions=[],
                          mass=mass, moment_of_inertia=moment_of_inertia,
                          bounding_radius=None)
+        self.height = height
+        self.diameter = diameter
+        self.rel_height_pressure_center = rel_height_pressure_center
         self.lift_coeff = lift_coeff
         self.drag_coeff = drag_coeff
         self.lift_area = lift_area
         self.drag_area = drag_area
         self.induced_forces = [Vector()]
+        self.color = color
 
     # TODO: REWORK
     def _compute_induced_forces(self, relative_wind):
@@ -57,6 +65,19 @@ class RocketBody(ComponentBase):
         drag = self.drag_coeff * relative_wind[0] * self.drag_area
         self.induced_forces[0] = Vector(drag, lift)
 
+    def draw(self, simulator):
+        rocket_polygon = [Vector(-self.diameter, 0),
+                           Vector(-self.diameter/2, self.diameter),
+                           Vector(-self.diameter/2, (self.height - self.diameter)),
+                           Vector(0, self.height),
+                           Vector(self.diameter/2, (self.height - self.diameter)),
+                           Vector(self.diameter/2, self.diameter),
+                           Vector(self.diameter, 0)]
+        rocket_polygon = translate_polygon(rocket_polygon, Vector(0, -self.height * self.rel_height_pressure_center))
+        rocket_polygon = rotate_polygon(rocket_polygon, self.entity.orientation + self.orientation_in_entity)
+        rocket_polygon = translate_polygon(rocket_polygon, self.get_global_position())
+        rocket_polygon = simulator.polygon_from_physical(rocket_polygon)
+        pygame.draw.polygon(simulator.window, color=self.color, points=make_pairs(rocket_polygon))
 
 class Thruster(ComponentBase):
     def __init__(self, entity, position_in_entity, orientation_in_entity, input_functions=[], mass=1, max_thrust=1):
@@ -66,24 +87,28 @@ class Thruster(ComponentBase):
                          bounding_radius=None)
         self.max_thrust = max_thrust
         self.original_angle = orientation_in_entity
+        self.throttle = 0
         
     def _compute_control_inputs(self):
         if len(self.input_functions) > 0:
-            throttle = self.input_functions[0]()
-            self.thrust_forces = [Vector(throttle * self.max_thrust, 0).rotate(self.orientation_in_entity).rotate(self.entity.orientation)]
+            self.throttle = self.input_functions[0]()
+            self.propulsion_forces.append(Vector(0, self.throttle * self.max_thrust).rotate(self.orientation_in_entity).rotate(self.entity.orientation))
         if len(self.input_functions) > 1:
             self.orientation_in_entity = self.original_angle + self.input_functions[1]()
 
     def draw(self, simulator):
-        thruster_polygon = [Vector(0, 0), Vector(0.6, 0.5), Vector(1, 1), Vector(-1, 1), Vector(-0.6, 0.5)]
-        flame_polygon = [Vector(-0.5, 1), Vector(0, 1 + self.self.input_function[0]() * self.max_thrust)]
-        scale_polygon(thruster_polygon, simulator.scale)
-        scale_polygon(flame_polygon, simulator.scale)
-        rotate_polygon(thruster_polygon, self.entity.orientation + self.orientation_in_entity)
-        rotate_polygon(flame_polygon, self.entity.orientation + self.orientation_in_entity)
-        translate_polygon(thruster_polygon, self.get_global_position() * simulator.scale)
-        translate_polygon(flame_polygon, self.get_global_position() * simulator.scale)
-
+        thruster_polygon = [Vector(0, 0), Vector(0.6, -0.5), Vector(1, -1), Vector(-1, -1), Vector(-0.6, -0.5)]
+        flame_polygon = [Vector(-0.5, -1), Vector(0, -1 - self.throttle * self.max_thrust / 100), Vector(0.5, -1)]
+        thruster_polygon = scale_polygon(thruster_polygon, self.max_thrust/10000)
+        flame_polygon = scale_polygon(flame_polygon, self.max_thrust/10000)
+        thruster_polygon = rotate_polygon(thruster_polygon, self.entity.orientation + self.orientation_in_entity)
+        flame_polygon = rotate_polygon(flame_polygon, self.entity.orientation + self.orientation_in_entity)
+        thruster_polygon = translate_polygon(thruster_polygon, self.get_global_position())
+        flame_polygon = translate_polygon(flame_polygon, self.get_global_position())
+        thruster_polygon = simulator.polygon_from_physical(thruster_polygon)
+        flame_polygon = simulator.polygon_from_physical(flame_polygon)
+        pygame.draw.polygon(simulator.window, color=(100, 100, 100), points=make_pairs(thruster_polygon))
+        pygame.draw.polygon(simulator.window, color=(255, 136, 0), points=make_pairs(flame_polygon))
 
 class Airfoil(ComponentBase):
     def __init__(self, entity, mass, position_in_entity, orientation_in_entity, area, input_functions=[]):

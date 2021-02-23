@@ -9,6 +9,9 @@ def translate_polygon(polygon_shape, vector: Vector):
 def rotate_polygon(polygon_shape, angle):
     return [pt.rotate(angle) for pt in polygon_shape]
 
+def make_pairs(polygon_shape):
+    return [(v[0], v[1]) for v in polygon_shape]
+
 def get_arrow(length=1, width=1):
     return [Vector(0, width / 2 ),
             Vector(length, width / 2 ),
