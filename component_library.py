@@ -25,18 +25,29 @@ class Sphere(ComponentBase):
                            radius=self.radius * simulator.scale)
 
 class Athmosphere(ComponentBase):
-    def __init__(self, entity, position_in_entity, radius, density, color=(100, 100, 255)):
+    def __init__(self, entity, position_in_entity, radius, density, color=(100, 100, 255), max_wind=0):
         super().__init__(entity, position_in_entity=position_in_entity, orientation_in_entity=0,
                          mass=0, moment_of_inertia=0)
         self.radius = radius
         self.density = density
         self.color = color
+        self.max_wind = max_wind
+
+    def get_wind_emitted_to_component(self, component):
+        d_position = component.get_global_position() - self.get_global_position()
+        d_velocity = self.get_global_velocity() - component.get_global_velocity()
+        distance_to_center = d_position.norm()
+        if distance_to_center < self.radius:
+            additional_wind_speed = self.max_wind / self.radius * distance_to_center
+            return d_velocity + d_position.rotate(-np.pi/2).unit_length() * additional_wind_speed
+        else:
+            return Vector()
+
 
     def draw(self, simulator):
         pygame.draw.circle(simulator.window, color=self.color,
                            center=(simulator.position_from_physical(self.get_global_position())).get(),
                            radius=self.radius * simulator.scale)
-
 
 class RocketBody(ComponentBase):
     def __init__(self, entity, position_in_entity, orientation_in_entity=0,
@@ -58,12 +69,15 @@ class RocketBody(ComponentBase):
         self.induced_forces = [Vector()]
         self.color = color
 
-    # TODO: REWORK
-    def _compute_induced_forces(self, relative_wind):
-        relative_wind = relative_wind.rotate(-self.orientation_in_entity)
-        lift = self.lift_coeff * relative_wind[1] * self.lift_area
-        drag = self.drag_coeff * relative_wind[0] * self.drag_area
-        self.induced_forces[0] = Vector(drag, lift)
+    def _compute_aerodynamic_forces(self, wind_in_global):
+        if wind_in_global.norm() > 0:
+            relative_wind = (wind_in_global - self.get_global_velocity()).rotate(-self.entity.orientation).rotate(-self.orientation_in_entity)
+        else:
+            relative_wind = Vector()
+        lift = self.lift_coeff * relative_wind[0] * self.lift_area
+        drag = self.drag_coeff * relative_wind[1] * self.drag_area
+        return Vector(lift, drag).rotate(self.orientation_in_entity).rotate(self.entity.orientation)
+        # return Vector()
 
     def draw(self, simulator):
         rocket_polygon = [Vector(-self.diameter, 0),
@@ -98,9 +112,9 @@ class Thruster(ComponentBase):
 
     def draw(self, simulator):
         thruster_polygon = [Vector(0, 0), Vector(0.6, -0.5), Vector(1, -1), Vector(-1, -1), Vector(-0.6, -0.5)]
-        flame_polygon = [Vector(-0.5, -1), Vector(0, -1 - self.throttle * self.max_thrust / 100), Vector(0.5, -1)]
-        thruster_polygon = scale_polygon(thruster_polygon, self.max_thrust/10000)
-        flame_polygon = scale_polygon(flame_polygon, self.max_thrust/10000)
+        flame_polygon = [Vector(-0.5, -1), Vector(0, -1 - self.throttle * self.max_thrust / 50), Vector(0.5, -1)]
+        thruster_polygon = scale_polygon(thruster_polygon, self.max_thrust/200)
+        flame_polygon = scale_polygon(flame_polygon, self.max_thrust/200)
         thruster_polygon = rotate_polygon(thruster_polygon, self.entity.orientation + self.orientation_in_entity)
         flame_polygon = rotate_polygon(flame_polygon, self.entity.orientation + self.orientation_in_entity)
         thruster_polygon = translate_polygon(thruster_polygon, self.get_global_position())

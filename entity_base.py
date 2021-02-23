@@ -1,5 +1,7 @@
+import pygame
 from abc import ABC, abstractmethod
 from vector import Vector
+from polygon_shapes import *
 
 class EntityBase(ABC):
     def __init__(self, position_init: Vector = Vector(), orientation_init=0, name=''):
@@ -53,11 +55,24 @@ class EntityBase(ABC):
     def _draw_geometry(self, simulator):
         pass
 
+    def _draw_forces(self, simulator):
+        # draw net gravitational forces and CG
+        total_gravitational_force = Vector()
+        for component in self.components:
+            for gravitational_force in component.gravitational_forces:
+                total_gravitational_force += gravitational_force
+
+        arrow = get_arrow(length=total_gravitational_force.norm())
+        arrow = rotate_polygon(arrow, total_gravitational_force.get_angle())
+        arrow = translate_polygon(arrow, self._get_center_of_mass())
+        arrow = simulator.polygon_from_physical(arrow)
+        pygame.draw.polygon(simulator.window, color=(255, 0, 0), points=make_pairs(arrow))
+
+
     def update_and_draw(self, simulator, time_step):
         for component in self.components:
             component.update(simulator)
 
-        print(self._get_total_force())
         acceleration = self._get_total_force() / self._get_total_mass()
         acceleration_angular = self._get_total_torque() / self._get_moment_of_inertia()
         self.velocity += acceleration * time_step
@@ -68,3 +83,4 @@ class EntityBase(ABC):
         self._draw_geometry(simulator)
         for component in self.components:
             component.draw(simulator)
+        self._draw_forces(simulator)

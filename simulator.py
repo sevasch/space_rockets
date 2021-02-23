@@ -8,6 +8,10 @@ class Simulator:
         self.camera_center = Vector()
         self.window_size = window_size
         self.scale = scale_init
+        self.tracked_entity = None
+
+    def track(self, entity):
+        self.tracked_entity = entity
 
     def add_entity(self, entity):
         self.entities.append(entity)
@@ -18,7 +22,7 @@ class Simulator:
     def polygon_from_physical(self, pts: []):
         return [self.position_from_physical(pt) for pt in pts]
 
-    def run(self):
+    def run(self, fps=60):
         pygame.init()
         self.joystick = pygame.joystick.Joystick(0)
         self.joystick.init()
@@ -26,7 +30,7 @@ class Simulator:
         clock = pygame.time.Clock()
         running = True
         while running:
-            time_step = clock.tick(20) / 1000
+            time_step = clock.tick(fps) / 1000
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -50,6 +54,9 @@ class Simulator:
 
             if keys[pygame.K_RIGHT]:
                 self.camera_center += Vector(1, 0) / self.scale * 5
+
+            if self.tracked_entity:
+                self.camera_center = self.tracked_entity.position
 
             self.window.fill((0, 0, 0))
             for entity in self.entities:

@@ -1,7 +1,8 @@
+import pygame
 import numpy as np
 from vector import Vector
 from abc import ABC, abstractmethod
-
+from polygon_shapes import *
 
 class ComponentBase(ABC):
     def __init__(self, entity, position_in_entity: Vector, orientation_in_entity,
@@ -33,10 +34,19 @@ class ComponentBase(ABC):
         pass
 
     def _compute_aerodynamic_forces(self, wind_in_global):
-        pass
+        return Vector()
 
     def get_global_position(self):
         return self.entity.position + self.position_in_entity.rotate(self.entity.orientation)
+
+    def get_global_velocity(self):
+        return self.entity.velocity \
+                + Vector(-self.entity.velocity_angular * np.sin(self.entity.orientation),
+                          self.entity.velocity_angular * np.cos(self.entity.orientation))
+
+    def get_wind_emitted_to_component(self, component):
+        # describes the wind emitted to other components in global coordinate system
+        return Vector()
 
     def get_total_force(self):
         total_force = Vector()
@@ -45,7 +55,6 @@ class ComponentBase(ABC):
         for aerodynamic_force in self.aerodynamic_forces:
             total_force += aerodynamic_force
         for propulsion_force in self.propulsion_forces:
-            print(propulsion_force)
             total_force += propulsion_force
         return total_force
 
@@ -56,27 +65,40 @@ class ComponentBase(ABC):
         self._compute_control_inputs()
 
         for entity in simulator.entities:
-            for component in entity.components:
-                if not component == self:
-                    d_position = component.get_global_position() - self.get_global_position()
+            if not entity == self.entity:
+                for component in entity.components:
+                    if not component == self:
+                        d_position = component.get_global_position() - self.get_global_position()
 
-                    # update gravitational forces
-                    gravitational_force = 3e5 * 6.67 * np.power(10., -11) * (self.mass * component.mass) / max(np.power(d_position.norm(), 2), 1e-3)
-                    self.gravitational_forces.append(d_position.unit_length() * gravitational_force)
+                        # update gravitational forces
+                        gravitational_force = 3e5 * 6.67 * np.power(10., -11) * (self.mass * component.mass) / max(np.power(d_position.norm(), 2), 1)
+                        self.gravitational_forces.append(d_position.unit_length() * gravitational_force)
 
-                    # update aerodynamic forces
-                    if callable(getattr(entity, 'get_wind', None)):
-                        self._compute_aerodynamic_forces(entity.get_wind(self))
+                        # update aerodynamic forces
+                        aerodynamic_force = self._compute_aerodynamic_forces(component.get_wind_emitted_to_component(self))
+                        self.aerodynamic_forces.append(aerodynamic_force)
 
-                    # get contact between planets
-                    if self.bounding_radius and component.bounding_radius:
-                        distance = d_position.norm() - (self.bounding_radius + component.bounding_radius)
-                        if distance < 0:
-                            contact_force = d_position.unit_length() * np.abs(distance)**4
-                            self.contact_forces.append(contact_force)
-                            # print(distance, contact_force, gravitational_force)
+                        # get contact between planets
+                        if self.bounding_radius and component.bounding_radius:
+                            distance = d_position.norm() - (self.bounding_radius + component.bounding_radius)
+                            if distance < 0:
+                                contact_force = d_position.unit_length() * np.abs(distance)**4
+                                self.contact_forces.append(contact_force)
 
+
+    def _draw_geometry(self, simulator):
+        pass
+
+    def _draw_forces(self, simulator):
+        pass
+
+
+        # for aerodynamic_force in self.aerodynamic_forces:
+        #     total_force += aerodynamic_force
+        # for propulsion_force in self.propulsion_forces:
+        #     total_force += propulsion_force
 
 
     def draw(self, simulator):
-        pass
+        self._draw_geometry(simulator)
+        self._draw_forces(simulator)

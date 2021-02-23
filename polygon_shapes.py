@@ -12,7 +12,8 @@ def rotate_polygon(polygon_shape, angle):
 def make_pairs(polygon_shape):
     return [(v[0], v[1]) for v in polygon_shape]
 
-def get_arrow(length=1, width=1):
+def get_arrow(length=1, ratio=0.05):
+    width = length * ratio
     return [Vector(0, width / 2 ),
             Vector(length, width / 2 ),
             Vector(length, width ),
