@@ -1,0 +1,19 @@
+from vector import Vector
+
+def scale_polygon(polygon_shape, scale_factor):
+    return [pt * scale_factor for pt in polygon_shape]
+
+def translate_polygon(polygon_shape, vector: Vector):
+    return [pt + vector for pt in polygon_shape]
+
+def rotate_polygon(polygon_shape, angle):
+    return [pt.rotate(angle) for pt in polygon_shape]
+
+def get_arrow(length=1, width=1):
+    return [Vector(0, width / 2 ),
+            Vector(length, width / 2 ),
+            Vector(length, width ),
+            Vector((length + width), 0),
+            Vector(length, - width ),
+            Vector(length, - width / 2 ),
+            Vector(0, - width / 2 )]
