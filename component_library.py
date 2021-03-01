@@ -77,19 +77,20 @@ class RocketBody(ComponentBase):
         lift = self.lift_coeff * relative_wind[0] * self.lift_area
         drag = self.drag_coeff * relative_wind[1] * self.drag_area
         return Vector(lift, drag).rotate(self.orientation_in_entity).rotate(self.entity.orientation)
-        # return Vector()
 
     def draw(self, simulator):
         rocket_polygon = [Vector(-self.diameter, 0),
-                           Vector(-self.diameter/2, self.diameter),
-                           Vector(-self.diameter/2, (self.height - self.diameter)),
-                           Vector(0, self.height),
-                           Vector(self.diameter/2, (self.height - self.diameter)),
-                           Vector(self.diameter/2, self.diameter),
-                           Vector(self.diameter, 0)]
+                          Vector(-self.diameter/2, self.diameter),
+                          Vector(-self.diameter/2, (self.height - self.diameter)),
+                          Vector(0, self.height),
+                          Vector(self.diameter/2, (self.height - self.diameter)),
+                          Vector(self.diameter/2, self.diameter),
+                          Vector(self.diameter, 0)]
         rocket_polygon = translate_polygon(rocket_polygon, Vector(0, -self.height * self.rel_height_pressure_center))
-        rocket_polygon = rotate_polygon(rocket_polygon, self.entity.orientation + self.orientation_in_entity)
-        rocket_polygon = translate_polygon(rocket_polygon, self.get_global_position())
+        rocket_polygon = rotate_polygon(rocket_polygon, self.orientation_in_entity)
+        rocket_polygon = translate_polygon(rocket_polygon, self.get_position_relative_to_center_of_gravity())
+        rocket_polygon = rotate_polygon(rocket_polygon, self.entity.orientation)
+        rocket_polygon = translate_polygon(rocket_polygon, self.entity.position_of_center_of_gravity)
         rocket_polygon = simulator.polygon_from_physical(rocket_polygon)
         pygame.draw.polygon(simulator.window, color=self.color, points=make_pairs(rocket_polygon))
 
@@ -115,10 +116,14 @@ class Thruster(ComponentBase):
         flame_polygon = [Vector(-0.5, -1), Vector(0, -1 - self.throttle * self.max_thrust / 50), Vector(0.5, -1)]
         thruster_polygon = scale_polygon(thruster_polygon, self.max_thrust/200)
         flame_polygon = scale_polygon(flame_polygon, self.max_thrust/200)
-        thruster_polygon = rotate_polygon(thruster_polygon, self.entity.orientation + self.orientation_in_entity)
-        flame_polygon = rotate_polygon(flame_polygon, self.entity.orientation + self.orientation_in_entity)
-        thruster_polygon = translate_polygon(thruster_polygon, self.get_global_position())
-        flame_polygon = translate_polygon(flame_polygon, self.get_global_position())
+        thruster_polygon = rotate_polygon(thruster_polygon, self.orientation_in_entity)
+        flame_polygon = rotate_polygon(flame_polygon, self.orientation_in_entity)
+        thruster_polygon = translate_polygon(thruster_polygon, self.get_position_relative_to_center_of_gravity())
+        flame_polygon = translate_polygon(flame_polygon, self.get_position_relative_to_center_of_gravity())
+        thruster_polygon = rotate_polygon(thruster_polygon, self.entity.orientation)
+        flame_polygon = rotate_polygon(flame_polygon, self.entity.orientation)
+        thruster_polygon = translate_polygon(thruster_polygon, self.entity.position_of_center_of_gravity)
+        flame_polygon = translate_polygon(flame_polygon, self.entity.position_of_center_of_gravity)
         thruster_polygon = simulator.polygon_from_physical(thruster_polygon)
         flame_polygon = simulator.polygon_from_physical(flame_polygon)
         pygame.draw.polygon(simulator.window, color=(100, 100, 100), points=make_pairs(thruster_polygon))

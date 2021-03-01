@@ -30,6 +30,9 @@ class ComponentBase(ABC):
         self.propulsion_forces = []
         self.contact_forces = []
 
+    def get_position_relative_to_center_of_gravity(self):
+        return self.position_in_entity - self.entity.get_center_of_gravity()
+
     def _compute_control_inputs(self):
         pass
 
@@ -37,12 +40,19 @@ class ComponentBase(ABC):
         return Vector()
 
     def get_global_position(self):
-        return self.entity.position + self.position_in_entity.rotate(self.entity.orientation)
+        return self.entity.position_of_center_of_gravity + self.position_in_entity.rotate(self.entity.orientation)
+
+    # def get_global_draw_position(self):
+    #     return self.entity.center_of_mass + self.position_in_entity.rotate(self.entity.orientation)
+
 
     def get_global_velocity(self):
         return self.entity.velocity \
                 + Vector(-self.entity.velocity_angular * np.sin(self.entity.orientation),
                           self.entity.velocity_angular * np.cos(self.entity.orientation))
+
+    # def get_velocity_relative_to_entity(self, entity):
+    #
 
     def get_wind_emitted_to_component(self, component):
         # describes the wind emitted to other components in global coordinate system

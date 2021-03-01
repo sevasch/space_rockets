@@ -56,7 +56,8 @@ class Simulator:
                 self.camera_center += Vector(1, 0) / self.scale * 5
 
             if self.tracked_entity:
-                self.camera_center = self.tracked_entity.position
+                self.camera_center = self.tracked_entity.position_of_center_of_gravity
+                self.scale = min(2e2 / self.tracked_entity.velocity.norm(), 25)
 
             self.window.fill((0, 0, 0))
             for entity in self.entities:
