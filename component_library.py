@@ -14,9 +14,8 @@ class Sphere(ComponentBase):
         volume = 4 / 3 * np.pi * np.power(float(radius), 3)
         moment_of_inertia = 2 / 5 * volume * density * radius ** 2
         super().__init__(entity, position_in_entity=position_in_entity, orientation_in_entity=0,
-                         mass=volume * density, moment_of_inertia=moment_of_inertia)
+                         mass=volume * density, moment_of_inertia=moment_of_inertia, bounding_radius=radius)
         self.radius = radius
-        self.bounding_radius = radius
         self.color = color
 
     def draw(self, simulator):
@@ -49,6 +48,31 @@ class Athmosphere(ComponentBase):
                            center=(simulator.position_from_physical(self.get_global_position())).get(),
                            radius=self.radius * simulator.scale)
 
+class LandingLeg(ComponentBase):
+    def __init__(self, entity, position_in_entity, orientation_in_entity, length, width, mass=0):
+        super().__init__(entity, position_in_entity=position_in_entity, orientation_in_entity=orientation_in_entity,
+                         mass=mass, moment_of_inertia=0, bounding_radius=width/2)
+        self.length = length
+        self.width = width
+
+    def draw(self, simulator):
+        leg_polygon = [Vector(-self.width/2, 0),
+                       Vector(-self.width/2, self.width/4),
+                       Vector(-self.width/6, self.width/4),
+                       Vector(-self.width/6, self.length),
+                       Vector(self.width/6, self.length),
+                       Vector(self.width/6, self.width/4),
+                       Vector(self.width/2, self.width/4),
+                       Vector(self.width/2, 0)]
+        leg_polygon = rotate_polygon(leg_polygon, self.orientation_in_entity)
+        leg_polygon = translate_polygon(leg_polygon, self.get_position_relative_to_center_of_gravity())
+        leg_polygon = rotate_polygon(leg_polygon, self.entity.orientation)
+        leg_polygon = translate_polygon(leg_polygon, self.entity.position_of_center_of_gravity)
+        leg_polygon = simulator.polygon_from_physical(leg_polygon)
+        pygame.draw.polygon(simulator.window, color=(0, 0, 0), points=make_pairs(leg_polygon))
+
+
+
 class RocketBody(ComponentBase):
     def __init__(self, entity, position_in_entity, orientation_in_entity=0,
                  mass=1, moment_of_inertia=0,
@@ -68,6 +92,8 @@ class RocketBody(ComponentBase):
         self.drag_area = drag_area
         self.induced_forces = [Vector()]
         self.color = color
+
+        # self.bounding_radius = 2
 
     def _compute_aerodynamic_forces(self, wind_in_global):
         if wind_in_global.norm() > 0:
@@ -93,6 +119,9 @@ class RocketBody(ComponentBase):
         rocket_polygon = translate_polygon(rocket_polygon, self.entity.position_of_center_of_gravity)
         rocket_polygon = simulator.polygon_from_physical(rocket_polygon)
         pygame.draw.polygon(simulator.window, color=self.color, points=make_pairs(rocket_polygon))
+        # pygame.draw.circle(simulator, (0, 0, 0),
+        #                    self.entity.position_of_center_of_gravity * simulator.scale
+        #                    + (1-self.rel_height_pressure_center) * self.)
 
 class Thruster(ComponentBase):
     def __init__(self, entity, position_in_entity, orientation_in_entity, input_functions=[], mass=1, max_thrust=1):
@@ -113,7 +142,7 @@ class Thruster(ComponentBase):
 
     def draw(self, simulator):
         thruster_polygon = [Vector(0, 0), Vector(0.6, -0.5), Vector(1, -1), Vector(-1, -1), Vector(-0.6, -0.5)]
-        flame_polygon = [Vector(-0.5, -1), Vector(0, -1 - self.throttle * self.max_thrust / 50), Vector(0.5, -1)]
+        flame_polygon = [Vector(-0.5, -1), Vector(0, -1 - self.throttle * self.max_thrust / 10), Vector(0.5, -1)]
         thruster_polygon = scale_polygon(thruster_polygon, self.max_thrust/200)
         flame_polygon = scale_polygon(flame_polygon, self.max_thrust/200)
         thruster_polygon = rotate_polygon(thruster_polygon, self.orientation_in_entity)

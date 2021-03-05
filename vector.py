@@ -16,6 +16,9 @@ class Vector():
         new_vec = R.dot(self.data)
         return Vector(new_vec[0], new_vec[1])
 
+    def dot(self, other):
+        return self.data[0] * other.data[0] + self.data[1] * other.data[1]
+
     def get_angle(self):
         return np.arctan2(self.data[1], self.data[0])
 
@@ -50,3 +53,9 @@ class Vector():
 
     def __truediv__(self, other: float):
         return Vector(self.data[0] / other, self.data[1] / other)
+
+
+if __name__ == '__main__':
+    v1 = Vector(1, 2)
+    v2 = Vector(1, 1)
+    print(v1.dot(v2))

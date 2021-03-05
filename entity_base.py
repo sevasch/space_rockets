@@ -16,7 +16,7 @@ class EntityBase(ABC):
     def add_component(self, component):
         self.components.append(component)
 
-    def _get_total_mass(self):
+    def get_total_mass(self):
         total_mass = 0
         for component in self.components:
             total_mass += component.mass
@@ -26,8 +26,8 @@ class EntityBase(ABC):
         center_of_gravity = Vector()
         for component in self.components:
             center_of_gravity += component.position_in_entity * component.mass
-        center_of_gravity = center_of_gravity / self._get_total_mass()
-        return center_of_gravity
+        center_of_gravity = center_of_gravity / self.get_total_mass()
+        return center_of_gravity  # in entity coordinate system
 
     def _get_moment_of_inertia(self):
         total_moment_of_inertia = 0
@@ -73,7 +73,7 @@ class EntityBase(ABC):
             component.update(simulator)
 
         if not self.fixed:
-            acceleration = self._get_total_force() / self._get_total_mass()
+            acceleration = self._get_total_force() / self.get_total_mass()
             acceleration_angular = self._get_total_torque() / self._get_moment_of_inertia()
             self.velocity += acceleration * time_step
             self.velocity_angular += acceleration_angular * time_step
@@ -83,4 +83,6 @@ class EntityBase(ABC):
         self._draw_geometry(simulator)
         for component in self.components:
             component.draw(simulator)
+        pygame.draw.circle(simulator.window, (255, 0, 0), simulator.position_from_physical(self.position_of_center_of_gravity).get(), simulator.scale * 0.05)
+
         # self._draw_forces(simulator)

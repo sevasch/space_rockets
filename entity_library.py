@@ -13,10 +13,11 @@ class Planet(EntityBase):
 
 class Rocket(EntityBase):
     def __init__(self, position_init: Vector=Vector(), orientation_init=0,
-                 mass=1000, max_thrust=10000,
+                 mass=1000, max_thrust=10000, max_thrust_thrusters=100,
                  height=10, diameter=2, rel_height_pressure_center=0.3,
-                 color=(255, 150, 0),
-                 throttle_fn=lambda: 1, vector_fn=lambda:0):
+                 color=(211, 211, 211),
+                 throttle_fn=lambda: 1, vector_fn=lambda:0,
+                 thruster_left_fn=lambda: 0, thruster_right_fn=lambda: 0):
         super().__init__(position_init=position_init, orientation_init=orientation_init)
         self.components.append(RocketBody(self, position_in_entity=Vector(0, 0), orientation_in_entity=0,
                                           mass=mass/8*3, moment_of_inertia=0,
@@ -28,3 +29,11 @@ class Rocket(EntityBase):
                                         mass=mass/8, max_thrust=max_thrust))
         self.components.append(Mass(self, position_in_entity=Vector(0, height*(1-rel_height_pressure_center-0.2)),
                                     mass=mass/10*20, moment_of_inertia=0))
+        self.components.append(Thruster(self, position_in_entity=Vector(-diameter/2, 0.65*height), orientation_in_entity=-np.pi/2,
+                     input_functions=[thruster_left_fn],
+                     mass=mass / 8, max_thrust=max_thrust_thrusters))
+        self.components.append(Thruster(self, position_in_entity=Vector(diameter/2, 0.65*height), orientation_in_entity=np.pi/2,
+                     input_functions=[thruster_right_fn],
+                     mass=mass / 8, max_thrust=max_thrust_thrusters))
+        self.components.append(LandingLeg(self, position_in_entity=Vector(-diameter, -height * rel_height_pressure_center - 0.4), orientation_in_entity=-0.2, length=0.4, width=0.2))
+        self.components.append(LandingLeg(self, position_in_entity=Vector(diameter, -height * rel_height_pressure_center - 0.4), orientation_in_entity=0.2, length=0.4, width=0.2))
