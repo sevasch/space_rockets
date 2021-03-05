@@ -100,3 +100,4 @@ class EntityBase(ABC):
                 for j in range(i+1):
                     pygame.draw.circle(simulator.window, (255, 255 - 20*i, 0), simulator.position_from_physical(self.position_of_center_of_gravity + Vector(x_offset, y_offset) * explosion_radius_init * 0.5).get(), simulator.scale * explosion_radius)
                 explosion_radius *= 0.5
+

@@ -76,6 +76,15 @@ class Simulator:
                 self.camera_center = self.tracked_entity.position_of_center_of_gravity
                 if self.auto_scale:
                     self.scale = min(self.scale_max / self.tracked_entity.velocity.norm()/10, self.scale_max/10)
+                if self.tracked_entity.is_crashed:
+                    pygame.font.init()  # you have to call this at the start,
+                    # if you want to use this module.
+                    myfont = pygame.font.SysFont('Comic Sans MS', 50)
+                    textsurface = myfont.render('You Crashed!', False, (50, 50, 50))
+                    self.window.blit(textsurface, (self.window_size[0]/2-150, self.window_size[1]/6))
+                    pygame.display.update()
+
+                    pass
 
             self.window.fill((0, 0, 0))
             for entity in self.entities:

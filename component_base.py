@@ -108,7 +108,6 @@ class ComponentBase(ABC):
                             #     print(velocity_tangential)
                             if penetration_depth > 0 and d_velocity.norm() > 1:
                                 self.entity.crash()
-                                print('crash')
                             elif penetration_depth > 0:
                                 normal_force = -d_position.unit_length() * 100 * self.entity.get_total_mass() * (penetration_depth - 1e-2 * velocity_radial)
                                 friction_force = d_position.unit_length().rotate(np.pi/2) * velocity_tangential * self.entity.get_total_mass() * penetration_depth
