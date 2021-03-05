@@ -1,10 +1,11 @@
 import pygame
+import numpy as np
 from abc import ABC, abstractmethod
 from vector import Vector
 from polygon_shapes import *
 
 class EntityBase(ABC):
-    def __init__(self, position_init: Vector = Vector(), orientation_init=0, name='', fixed=False):
+    def __init__(self, position_init: Vector = Vector(), orientation_init=0, name='', fixed=False, can_crash=False):
         self.name = name
         self.position_of_center_of_gravity = position_init
         self.orientation = orientation_init  # rad
@@ -12,6 +13,8 @@ class EntityBase(ABC):
         self.velocity_angular = 0
         self.components = []
         self.fixed = fixed
+        self.can_crash = can_crash
+        self.is_crashed = False
 
     def add_component(self, component):
         self.components.append(component)
@@ -67,22 +70,33 @@ class EntityBase(ABC):
         # arrow = simulator.polygon_from_physical(arrow)
         # pygame.draw.polygon(simulator.window, color=(255, 0, 0), points=make_pairs(arrow))
 
+    def crash(self):
+        if self.can_crash:
+            self.is_crashed = True
 
     def update_and_draw(self, simulator, time_step):
         for component in self.components:
             component.update(simulator)
 
-        if not self.fixed:
-            acceleration = self._get_total_force() / self.get_total_mass()
-            acceleration_angular = self._get_total_torque() / self._get_moment_of_inertia()
-            self.velocity += acceleration * time_step
-            self.velocity_angular += acceleration_angular * time_step
-            self.position_of_center_of_gravity += self.velocity * time_step
-            self.orientation += self.velocity_angular * time_step
+        if not self.is_crashed:
+            if not self.fixed:
+                acceleration = self._get_total_force() / self.get_total_mass()
+                acceleration_angular = self._get_total_torque() / self._get_moment_of_inertia()
+                self.velocity += acceleration * time_step
+                self.velocity_angular += acceleration_angular * time_step
+                self.position_of_center_of_gravity += self.velocity * time_step
+                self.orientation += self.velocity_angular * time_step
 
-        self._draw_geometry(simulator)
-        for component in self.components:
-            component.draw(simulator)
-        pygame.draw.circle(simulator.window, (255, 0, 0), simulator.position_from_physical(self.position_of_center_of_gravity).get(), simulator.scale * 0.05)
-
-        # self._draw_forces(simulator)
+            self._draw_geometry(simulator)
+            for component in self.components:
+                component.draw(simulator)
+            pygame.draw.circle(simulator.window, (255, 0, 0), simulator.position_from_physical(self.position_of_center_of_gravity).get(), simulator.scale * 0.05)
+        else:
+            explosion_radius_init = self.get_total_mass() / 10
+            explosion_radius = explosion_radius_init
+            for i in range(10):
+                x_offset = np.random.random() - 0.5
+                y_offset = np.random.random() - 0.5
+                for j in range(i+1):
+                    pygame.draw.circle(simulator.window, (255, 255 - 20*i, 0), simulator.position_from_physical(self.position_of_center_of_gravity + Vector(x_offset, y_offset) * explosion_radius_init * 0.5).get(), simulator.scale * explosion_radius)
+                explosion_radius *= 0.5
