@@ -104,12 +104,12 @@ class ComponentBase(ABC):
                             velocity_radial = d_velocity.dot(d_position) / d_position.norm()
                             # velocity_tangential = d_velocity.dot(d_position.rotate(np.pi/2)) / d_position.norm()
 
-                            if hasattr(self, 'length'):
-                                print(self.get_global_position(), bounding_distance)
+                            # if hasattr(self, 'length'):
+                            #     print(self.get_global_position(), bounding_distance)
                             if penetration_depth > 0 and d_velocity.norm() > 10:
                                 print('crash')
                             elif penetration_depth > 0:
-                                normal_force = -d_position.unit_length() * 10 * self.entity.get_total_mass() * (penetration_depth - velocity_radial / 10)
+                                normal_force = -d_position.unit_length() * 100 * self.entity.get_total_mass() * (penetration_depth - 1e-2 * velocity_radial)
                                 # TODO: implement friction force
                                 # if hasattr(self, 'height'):
                                 #     # self.contact_forces.append(Vector)

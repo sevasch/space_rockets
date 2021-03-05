@@ -51,7 +51,7 @@ class Athmosphere(ComponentBase):
 class LandingLeg(ComponentBase):
     def __init__(self, entity, position_in_entity, orientation_in_entity, length, width, mass=0):
         super().__init__(entity, position_in_entity=position_in_entity, orientation_in_entity=orientation_in_entity,
-                         mass=mass, moment_of_inertia=0, bounding_radius=width/2)
+                         mass=mass, moment_of_inertia=0, bounding_radius=width/5)
         self.length = length
         self.width = width
 
