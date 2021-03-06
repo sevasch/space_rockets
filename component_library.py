@@ -22,6 +22,11 @@ class Sphere(ComponentBase):
         pygame.draw.circle(simulator.window, color=self.color,
                            center=(simulator.position_from_physical(self.get_global_position())).get(),
                            radius=self.radius * simulator.scale)
+        for angle in np.linspace(0, 2*np.pi, int(self.radius)):
+            pos = self.get_global_position() + Vector(np.cos(angle), np.sin(angle)) * self.radius
+            pygame.draw.circle(simulator.window, color=(0, 0, 0),
+                               center=(simulator.position_from_physical(pos)).get(),
+                               radius=self.radius / 1000 * simulator.scale)
 
 class Athmosphere(ComponentBase):
     def __init__(self, entity, position_in_entity, radius, density, color=(100, 100, 255), max_wind=0):
