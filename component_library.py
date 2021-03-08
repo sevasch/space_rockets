@@ -3,6 +3,7 @@ import pygame
 from component_base import ComponentBase
 from polygon_shapes import *
 from apostolyuk import get_lift_coeff, get_drag_coeff
+from planets import draw_planet
 
 class Mass(ComponentBase):
     def __init__(self, entity, position_in_entity, mass, moment_of_inertia):
@@ -17,6 +18,7 @@ class Sphere(ComponentBase):
                          mass=volume * density, moment_of_inertia=moment_of_inertia, bounding_radius=radius)
         self.radius = radius
         self.color = color
+        self.planet_image = draw_planet(self.radius // 10)
 
     def draw(self, simulator):
         pygame.draw.circle(simulator.window, color=self.color,
@@ -163,31 +165,31 @@ class Thruster(ComponentBase):
         pygame.draw.polygon(simulator.window, color=(100, 100, 100), points=make_pairs(thruster_polygon))
         pygame.draw.polygon(simulator.window, color=(255, 136, 0), points=make_pairs(flame_polygon))
 
-class Airfoil(ComponentBase):
-    def __init__(self, entity, mass, position_in_entity, orientation_in_entity, area, input_functions=[]):
-        super().__init__(entity, mass, position_in_entity, orientation_in_entity, input_functions)
-        self.area = area
-        self.induced_forces = [Vector(), Vector()]
-        ratio = 8
-        scale = 0.5
-        self.polygon_shape = [Vector(scale * area/3, scale * area/ratio),
-                              Vector(scale * area/3, 0),
-                              Vector(-2*scale * area/2, 0),
-                              Vector(-2*scale * area/2, scale * area/ratio)]
-
-    def _compute_control_inputs(self):
-        self.orientation_in_entity = self.input_functions[0]()
-
-    # TODO: REWORK
-    def _compute_induced_forces(self, relative_wind):
-        relative_wind = relative_wind.rotate(-self.orientation_in_entity)
-        angle_of_attack = np.arctan2(relative_wind[1], -relative_wind[0])
-        lift = get_lift_coeff(angle_of_attack) * relative_wind.norm() * self.area
-        drag = get_drag_coeff(angle_of_attack) * relative_wind.norm() * self.area
-        # print('{:5.3f}, {:5.3f}, {:5.3f}'.format(relative_wind.norm(), self.entity.velocity[1], self.entity.velocity[1]))
-        self.induced_forces[0] = Vector(-drag, 0).rotate(-angle_of_attack)
-        self.induced_forces[1] = Vector(0, lift).rotate(-angle_of_attack)
-
-    def draw(self):
-        # TODO: REWORK
-        pass
+# class Airfoil(ComponentBase):
+#     def __init__(self, entity, mass, position_in_entity, orientation_in_entity, area, input_functions=[]):
+#         super().__init__(entity, mass, position_in_entity, orientation_in_entity, input_functions)
+#         self.area = area
+#         self.induced_forces = [Vector(), Vector()]
+#         ratio = 8
+#         scale = 0.5
+#         self.polygon_shape = [Vector(scale * area/3, scale * area/ratio),
+#                               Vector(scale * area/3, 0),
+#                               Vector(-2*scale * area/2, 0),
+#                               Vector(-2*scale * area/2, scale * area/ratio)]
+#
+#     def _compute_control_inputs(self):
+#         self.orientation_in_entity = self.input_functions[0]()
+#
+#     # TODO: REWORK
+#     def _compute_induced_forces(self, relative_wind):
+#         relative_wind = relative_wind.rotate(-self.orientation_in_entity)
+#         angle_of_attack = np.arctan2(relative_wind[1], -relative_wind[0])
+#         lift = get_lift_coeff(angle_of_attack) * relative_wind.norm() * self.area
+#         drag = get_drag_coeff(angle_of_attack) * relative_wind.norm() * self.area
+#         # print('{:5.3f}, {:5.3f}, {:5.3f}'.format(relative_wind.norm(), self.entity.velocity[1], self.entity.velocity[1]))
+#         self.induced_forces[0] = Vector(-drag, 0).rotate(-angle_of_attack)
+#         self.induced_forces[1] = Vector(0, lift).rotate(-angle_of_attack)
+#
+#     def draw(self):
+#         # TODO: REWORK
+#         pass

@@ -19,7 +19,7 @@ if __name__ == '__main__':
     s.add_entity(rocket:=Rocket(position_init=Vector(0, -3), orientation_init=np.pi,
                                 mass=10, max_thrust=50, max_thrust_thrusters=10,
                                 height=2, diameter=0.3, rel_height_pressure_center=0.2,
-                                throttle_fn=lambda: -1 * (s.joystick.get_axis(3) - 1) / 2, vector_fn=lambda:-s.joystick.get_axis(0),
+                                throttle_fn=lambda: -1 * (s.joystick.get_axis(3) - 1) / 2, vector_fn=lambda:-s.joystick.get_axis(0) + rocket.velocity_angular,
                                 thruster_left_fn=lambda: s.joystick.get_button(2), thruster_right_fn=lambda: s.joystick.get_button(3)))
 
     s.track(rocket)

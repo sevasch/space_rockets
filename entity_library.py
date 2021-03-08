@@ -27,7 +27,7 @@ class Rocket(EntityBase):
         self.components.append(Thruster(self, position_in_entity=Vector(0, -height * rel_height_pressure_center), orientation_in_entity=0,
                                         input_functions=[throttle_fn, vector_fn],
                                         mass=mass/8, max_thrust=max_thrust))
-        self.components.append(Mass(self, position_in_entity=Vector(0, height*(1-rel_height_pressure_center-0.2)),
+        self.components.append(Mass(self, position_in_entity=Vector(0, height*(1-rel_height_pressure_center-0.5)),
                                     mass=mass/10*20, moment_of_inertia=0))
         self.components.append(Thruster(self, position_in_entity=Vector(-diameter/2, 0.65*height), orientation_in_entity=-np.pi/2,
                      input_functions=[thruster_left_fn],
