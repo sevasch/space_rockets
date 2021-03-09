@@ -147,9 +147,9 @@ class Thruster(ComponentBase):
 
     def draw(self, simulator):
         thruster_polygon = [Vector(0, 0), Vector(0.6, -0.5), Vector(1, -1), Vector(-1, -1), Vector(-0.6, -0.5)]
-        flame_polygon = [Vector(-0.5, -1), Vector(0, -1 - self.throttle * self.max_thrust / 10), Vector(0.5, -1)]
-        thruster_polygon = scale_polygon(thruster_polygon, self.max_thrust/800)
-        flame_polygon = scale_polygon(flame_polygon, self.max_thrust/800)
+        flame_polygon = [Vector(-0.5, -1), Vector(0, -1 - self.throttle * self.max_thrust / 25), Vector(0.5, -1)]
+        thruster_polygon = scale_polygon(thruster_polygon, self.max_thrust/1000)
+        flame_polygon = scale_polygon(flame_polygon, self.max_thrust/1000)
         thruster_polygon = rotate_polygon(thruster_polygon, self.orientation_in_entity)
         flame_polygon = rotate_polygon(flame_polygon, self.orientation_in_entity)
         thruster_polygon = translate_polygon(thruster_polygon, self.get_position_relative_to_center_of_gravity())
