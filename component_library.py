@@ -3,7 +3,6 @@ import pygame
 from component_base import ComponentBase
 from polygon_shapes import *
 from apostolyuk import get_lift_coeff, get_drag_coeff
-from planets import draw_planet
 
 class Mass(ComponentBase):
     def __init__(self, entity, position_in_entity, mass, moment_of_inertia):
@@ -18,13 +17,12 @@ class Sphere(ComponentBase):
                          mass=volume * density, moment_of_inertia=moment_of_inertia, bounding_radius=radius)
         self.radius = radius
         self.color = color
-        self.planet_image = draw_planet(self.radius // 10)
 
     def draw(self, simulator):
         pygame.draw.circle(simulator.window, color=self.color,
                            center=(simulator.position_from_physical(self.get_global_position())).get(),
                            radius=self.radius * simulator.scale)
-        for angle in np.linspace(0, 2*np.pi, int(self.radius)):
+        for angle in np.linspace(0, 2*np.pi, 360):
             pos = self.get_global_position() + Vector(np.cos(angle), np.sin(angle)) * self.radius
             pygame.draw.circle(simulator.window, color=(0, 0, 0),
                                center=(simulator.position_from_physical(pos)).get(),
@@ -150,8 +148,8 @@ class Thruster(ComponentBase):
     def draw(self, simulator):
         thruster_polygon = [Vector(0, 0), Vector(0.6, -0.5), Vector(1, -1), Vector(-1, -1), Vector(-0.6, -0.5)]
         flame_polygon = [Vector(-0.5, -1), Vector(0, -1 - self.throttle * self.max_thrust / 10), Vector(0.5, -1)]
-        thruster_polygon = scale_polygon(thruster_polygon, self.max_thrust/200)
-        flame_polygon = scale_polygon(flame_polygon, self.max_thrust/200)
+        thruster_polygon = scale_polygon(thruster_polygon, self.max_thrust/800)
+        flame_polygon = scale_polygon(flame_polygon, self.max_thrust/800)
         thruster_polygon = rotate_polygon(thruster_polygon, self.orientation_in_entity)
         flame_polygon = rotate_polygon(flame_polygon, self.orientation_in_entity)
         thruster_polygon = translate_polygon(thruster_polygon, self.get_position_relative_to_center_of_gravity())

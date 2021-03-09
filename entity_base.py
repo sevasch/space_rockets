@@ -58,21 +58,20 @@ class EntityBase(ABC):
         pass
 
     # def _draw_forces(self, simulator):
-        # # draw net gravitational forces and CG
-        # total_gravitational_force = Vector()
-        # for component in self.components:
-        #     for gravitational_force in component.gravitational_forces:
-        #         total_gravitational_force += gravitational_force
-        #
-        # arrow = get_arrow(length=total_gravitational_force.norm())
-        # arrow = rotate_polygon(arrow, total_gravitational_force.get_angle())
-        # arrow = translate_polygon(arrow, self._get_center_of_gravity())
-        # arrow = simulator.polygon_from_physical(arrow)
-        # pygame.draw.polygon(simulator.window, color=(255, 0, 0), points=make_pairs(arrow))
+    #     # draw net gravitational forces and CG
+    #     total_gravitational_force = Vector()
+    #     for component in self.components:
+    #         for gravitational_force in component.gravitational_forces:
+    #             total_gravitational_force += gravitational_force
+    #
+    #     arrow = get_arrow(length=total_gravitational_force.norm())
+    #     arrow = rotate_polygon(arrow, total_gravitational_force.get_angle())
+    #     arrow = translate_polygon(arrow, self._get_center_of_gravity())
+    #     arrow = simulator.polygon_from_physical(arrow)
+    #     pygame.draw.polygon(simulator.window, color=(255, 0, 0), points=make_pairs(arrow))
 
     def crash(self):
-        if self.can_crash:
-            self.is_crashed = True
+        self.is_crashed = self.can_crash
 
     def update_and_draw(self, simulator, time_step):
         for component in self.components:
