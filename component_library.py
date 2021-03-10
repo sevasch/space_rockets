@@ -137,11 +137,14 @@ class Thruster(ComponentBase):
         self.max_thrust = max_thrust
         self.original_angle = orientation_in_entity
         self.throttle = 0
+        self.mixer = pygame.mixer.Channel(5)
+        self.sound = pygame.mixer.Sound('rocket_sound.mp3')
         
     def _compute_control_inputs(self):
         if len(self.input_functions) > 0:
             self.throttle = self.input_functions[0]()
             self.propulsion_forces.append(Vector(0, self.throttle * self.max_thrust).rotate(self.orientation_in_entity).rotate(self.entity.orientation))
+            self.sound.set_volume(self.throttle)
         if len(self.input_functions) > 1:
             self.orientation_in_entity = self.original_angle + self.input_functions[1]()
 

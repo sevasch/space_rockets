@@ -24,11 +24,18 @@ class ComponentBase(ABC):
 
         self.bounding_radius = bounding_radius
 
+        self.sound = None
+        self.mixer = None
+
     def _reset_forces(self):
         self.gravitational_forces = []
         self.aerodynamic_forces = []
         self.propulsion_forces = []
         self.contact_forces = []
+
+    def _play_sound(self):
+        if self.sound and not self.mixer.get_busy():
+            self.mixer.play(self.sound)
 
     def get_position_relative_to_center_of_gravity(self):
         return self.position_in_entity - self.entity.get_center_of_gravity()
@@ -75,7 +82,7 @@ class ComponentBase(ABC):
         return total_force
 
     def update(self, simulator):
-        total_forces_on_entity_old = self.entity._get_total_force()
+        self._play_sound()
 
         # check for interaction with environment
         self._reset_forces()

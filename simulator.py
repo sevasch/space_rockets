@@ -13,6 +13,10 @@ class Simulator:
         self.auto_scale = False
         self.tracked_entity = None
 
+        pygame.init()
+        pygame.mixer.init()
+        pygame.mixer.music.load('a_theme_for_space.mp3')
+
     def track(self, entity):
         self.tracked_entity = entity
 
@@ -34,7 +38,7 @@ class Simulator:
             self.scale /= factor
 
     def run(self, fps=60):
-        pygame.init()
+        pygame.mixer.music.play(-1)  # If the loops is -1 then the music will repeat indefinitely.
         self.joystick = pygame.joystick.Joystick(0)
         self.joystick.init()
         self.window = pygame.display.set_mode((self.window_size[0], self.window_size[1]))
