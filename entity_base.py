@@ -16,6 +16,8 @@ class EntityBase(ABC):
         self.can_crash = can_crash
         self.is_crashed = False
 
+        print('created entity at {}'.format(self.position_of_center_of_gravity))
+
     def add_component(self, component):
         self.components.append(component)
 
@@ -31,6 +33,9 @@ class EntityBase(ABC):
             center_of_gravity += component.position_in_entity * component.mass
         center_of_gravity = center_of_gravity / self.get_total_mass()
         return center_of_gravity  # in entity coordinate system
+
+    def get_distance_to(self, other):
+        return (self.position_of_center_of_gravity - other.position_of_center_of_gravity).norm()
 
     def _get_moment_of_inertia(self):
         total_moment_of_inertia = 0
@@ -89,7 +94,7 @@ class EntityBase(ABC):
             self._draw_geometry(simulator)
             for component in self.components:
                 component.draw(simulator)
-            pygame.draw.circle(simulator.window, (255, 0, 0), simulator.position_from_physical(self.position_of_center_of_gravity).get(), simulator.scale * 0.05)
+            pygame.draw.circle(simulator.window, (0, 0, 0), simulator.position_from_physical(self.position_of_center_of_gravity).get(), simulator.scale * 0.05)
         else:
             explosion_radius_init = self.get_total_mass() / 10
             explosion_radius = explosion_radius_init

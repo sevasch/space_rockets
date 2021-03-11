@@ -37,6 +37,7 @@ class Simulator:
         if self.scale > self.scale_min:
             self.scale /= factor
 
+
     def run(self, fps=60):
         pygame.mixer.music.play(-1)  # If the loops is -1 then the music will repeat indefinitely.
         self.joystick = pygame.joystick.Joystick(0)
@@ -92,6 +93,8 @@ class Simulator:
 
             self.window.fill((0, 0, 0))
             for entity in self.entities:
+                # position_in_pygame = self.position_from_physical(entity.position_of_center_of_gravity)
+                # if (self.camera_center - position_in_pygame).norm() < 2 * max(self.window_size):
                 entity.update_and_draw(self, time_step)
             pygame.draw.circle(self.window, (255, 120, 0),
                                self.position_from_physical(Vector()).get(),

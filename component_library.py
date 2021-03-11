@@ -22,11 +22,11 @@ class Sphere(ComponentBase):
         pygame.draw.circle(simulator.window, color=self.color,
                            center=(simulator.position_from_physical(self.get_global_position())).get(),
                            radius=self.radius * simulator.scale)
-        for angle in np.linspace(0, 2*np.pi, 360):
-            pos = self.get_global_position() + Vector(np.cos(angle), np.sin(angle)) * self.radius
-            pygame.draw.circle(simulator.window, color=(0, 0, 0),
-                               center=(simulator.position_from_physical(pos)).get(),
-                               radius=self.radius / 1000 * simulator.scale)
+        # for angle in np.linspace(0, 2*np.pi, 360):
+        #     pos = self.get_global_position() + Vector(np.cos(angle), np.sin(angle)) * self.radius
+        #     pygame.draw.circle(simulator.window, color=(0, 0, 0),
+        #                        center=(simulator.position_from_physical(pos)).get(),
+        #                        radius=self.radius / 1000 * simulator.scale)
 
 class Athmosphere(ComponentBase):
     def __init__(self, entity, position_in_entity, radius, density, color=(100, 100, 255), max_wind=0):
@@ -74,7 +74,7 @@ class LandingLeg(ComponentBase):
         leg_polygon = rotate_polygon(leg_polygon, self.entity.orientation)
         leg_polygon = translate_polygon(leg_polygon, self.entity.position_of_center_of_gravity)
         leg_polygon = simulator.polygon_from_physical(leg_polygon)
-        pygame.draw.polygon(simulator.window, color=(0, 0, 0), points=make_pairs(leg_polygon))
+        pygame.draw.polygon(simulator.window, color=(50, 50, 50), points=make_pairs(leg_polygon))
 
 
 
@@ -112,9 +112,11 @@ class RocketBody(ComponentBase):
     def draw(self, simulator):
         rocket_polygon = [Vector(-self.diameter, 0),
                           Vector(-self.diameter/2, self.diameter),
+                          Vector(-self.diameter/1.4, self.height / 2),
                           Vector(-self.diameter/2, (self.height - self.diameter)),
                           Vector(0, self.height),
                           Vector(self.diameter/2, (self.height - self.diameter)),
+                          Vector(self.diameter/1.4, self.height / 2),
                           Vector(self.diameter/2, self.diameter),
                           Vector(self.diameter, 0)]
         rocket_polygon = translate_polygon(rocket_polygon, Vector(0, -self.height * self.rel_height_pressure_center))
@@ -137,16 +139,21 @@ class Thruster(ComponentBase):
         self.max_thrust = max_thrust
         self.original_angle = orientation_in_entity
         self.throttle = 0
-        self.mixer = pygame.mixer.Channel(5)
+        counter = 1
+        for c in self.entity.components:
+            if c.mixer:
+                counter += 1
+        self.mixer = pygame.mixer.Channel(counter)
         self.sound = pygame.mixer.Sound('rocket_sound.mp3')
         
     def _compute_control_inputs(self):
         if len(self.input_functions) > 0:
             self.throttle = self.input_functions[0]()
             self.propulsion_forces.append(Vector(0, self.throttle * self.max_thrust).rotate(self.orientation_in_entity).rotate(self.entity.orientation))
-            self.sound.set_volume(self.throttle)
+            self.sound.set_volume(0.5 * self.throttle)
         if len(self.input_functions) > 1:
-            self.orientation_in_entity = self.original_angle + self.input_functions[1]()
+            self.orientation_in_entity = np.clip(self.original_angle + self.input_functions[1](),
+                                                 self.original_angle - np.pi / 8, self.original_angle + np.pi / 8)
 
     def draw(self, simulator):
         thruster_polygon = [Vector(0, 0), Vector(0.6, -0.5), Vector(1, -1), Vector(-1, -1), Vector(-0.6, -0.5)]

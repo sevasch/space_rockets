@@ -24,8 +24,8 @@ class ComponentBase(ABC):
 
         self.bounding_radius = bounding_radius
 
-        self.sound = None
         self.mixer = None
+        self.sound = None
 
     def _reset_forces(self):
         self.gravitational_forces = []
@@ -96,7 +96,7 @@ class ComponentBase(ABC):
                         d_velocity = self.get_relative_velocity_of(component)
 
                         # update gravitational forces
-                        gravitational_force = 1e6 * 6.67 * np.power(10., -11) * (self.mass * component.mass) / max(np.power(d_position.norm(), 2), 1)
+                        gravitational_force = 2e7 * 6.67 * np.power(10., -11) * (self.mass * component.mass) / max(np.power(d_position.norm(), 2), 1)
                         self.gravitational_forces.append(d_position.unit_length() * gravitational_force)
 
                         # update aerodynamic forces

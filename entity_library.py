@@ -18,7 +18,7 @@ class Rocket(EntityBase):
     def __init__(self, position_init: Vector = Vector(), orientation_init=0,
                  mass=1000, max_thrust=10000, max_thrust_thrusters=100,
                  height=10, diameter=2, rel_height_pressure_center=0.3,
-                 color=(211, 211, 211),
+                 color=(251, 55, 69),#(211, 211, 211),
                  throttle_fn=lambda: 1, vector_fn=lambda: 0,
                  thruster_left_fn=lambda: 0, thruster_right_fn=lambda: 0):
         super().__init__(position_init=position_init, orientation_init=orientation_init, can_crash=True)
