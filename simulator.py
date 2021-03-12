@@ -1,6 +1,6 @@
 import pygame
+import numpy as np
 from vector import Vector
-
 
 class Simulator:
     def __init__(self, window_size=(100, 100), scale_init: float = 1):
@@ -39,7 +39,7 @@ class Simulator:
 
 
     def run(self, fps=60):
-        pygame.mixer.music.play(-1)  # If the loops is -1 then the music will repeat indefinitely.
+        # pygame.mixer.music.play(-1)  # If the loops is -1 then the music will repeat indefinitely.
         self.joystick = pygame.joystick.Joystick(0)
         self.joystick.init()
         self.window = pygame.display.set_mode((self.window_size[0], self.window_size[1]))
@@ -84,7 +84,7 @@ class Simulator:
                 if self.tracked_entity.is_crashed:
                     pygame.font.init()  # you have to call this at the start,
                     # if you want to use this module.
-                    myfont = pygame.font.SysFont('Comic Sans MS', 50)
+                    myfont = pygame.font.SysFont('calibri', 50)
                     textsurface = myfont.render('You Crashed!', False, (50, 50, 50))
                     self.window.blit(textsurface, (self.window_size[0]/2-150, self.window_size[1]/6))
                     pygame.display.update()

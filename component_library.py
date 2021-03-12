@@ -1,5 +1,6 @@
 import numpy as np
 import pygame
+import time
 from component_base import ComponentBase
 from polygon_shapes import *
 from apostolyuk import get_lift_coeff, get_drag_coeff
@@ -59,23 +60,21 @@ class LandingLeg(ComponentBase):
                          mass=mass, moment_of_inertia=0, bounding_radius=width/5)
         self.length = length
         self.width = width
+        self.polygon = PolygonShape(np.array(((-self.width/2, 0, 1),
+                                              (-self.width/2, self.width/4, 1),
+                                              (-self.width/6, self.width/4, 1),
+                                              (-self.width/6, self.length, 1),
+                                              (self.width/6, self.length, 1),
+                                              (self.width/6, self.width/4, 1),
+                                              (self.width/2, self.width/4, 1),
+                                              (self.width/2, 0, 1))).transpose())
 
     def draw(self, simulator):
-        leg_polygon = [Vector(-self.width/2, 0),
-                       Vector(-self.width/2, self.width/4),
-                       Vector(-self.width/6, self.width/4),
-                       Vector(-self.width/6, self.length),
-                       Vector(self.width/6, self.length),
-                       Vector(self.width/6, self.width/4),
-                       Vector(self.width/2, self.width/4),
-                       Vector(self.width/2, 0)]
-        leg_polygon = rotate_polygon(leg_polygon, self.orientation_in_entity)
-        leg_polygon = translate_polygon(leg_polygon, self.get_position_relative_to_center_of_gravity())
-        leg_polygon = rotate_polygon(leg_polygon, self.entity.orientation)
-        leg_polygon = translate_polygon(leg_polygon, self.entity.position_of_center_of_gravity)
-        leg_polygon = simulator.polygon_from_physical(leg_polygon)
-        pygame.draw.polygon(simulator.window, color=(50, 50, 50), points=make_pairs(leg_polygon))
-
+        polygon = self.polygon.rotate(self.orientation_in_entity)\
+            .translate(self.get_position_relative_to_center_of_gravity())\
+            .rotate(self.entity.orientation)\
+            .translate(self.entity.position_of_center_of_gravity).to_simulator(simulator)
+        pygame.draw.polygon(simulator.window, color=(50, 50, 50), points=polygon)
 
 
 class RocketBody(ComponentBase):
@@ -98,7 +97,15 @@ class RocketBody(ComponentBase):
         self.induced_forces = [Vector()]
         self.color = color
 
-        # self.bounding_radius = 2
+        self.polygon = PolygonShape(np.array(((-self.diameter, 0, 1),
+                                              (-self.diameter/2, self.diameter, 1),
+                                              (-self.diameter/1.4, self.height / 2, 1),
+                                              (-self.diameter/2, (self.height - self.diameter), 1),
+                                              (0, self.height, 1),
+                                              (self.diameter/2, (self.height - self.diameter), 1),
+                                              (self.diameter/1.4, self.height / 2, 1),
+                                              (self.diameter/2, self.diameter, 1),
+                                              (self.diameter, 0, 1))).transpose())
 
     def _compute_aerodynamic_forces(self, wind_in_global):
         if wind_in_global.norm() > 0:
@@ -110,25 +117,12 @@ class RocketBody(ComponentBase):
         return Vector(lift, drag).rotate(self.orientation_in_entity).rotate(self.entity.orientation)
 
     def draw(self, simulator):
-        rocket_polygon = [Vector(-self.diameter, 0),
-                          Vector(-self.diameter/2, self.diameter),
-                          Vector(-self.diameter/1.4, self.height / 2),
-                          Vector(-self.diameter/2, (self.height - self.diameter)),
-                          Vector(0, self.height),
-                          Vector(self.diameter/2, (self.height - self.diameter)),
-                          Vector(self.diameter/1.4, self.height / 2),
-                          Vector(self.diameter/2, self.diameter),
-                          Vector(self.diameter, 0)]
-        rocket_polygon = translate_polygon(rocket_polygon, Vector(0, -self.height * self.rel_height_pressure_center))
-        rocket_polygon = rotate_polygon(rocket_polygon, self.orientation_in_entity)
-        rocket_polygon = translate_polygon(rocket_polygon, self.get_position_relative_to_center_of_gravity())
-        rocket_polygon = rotate_polygon(rocket_polygon, self.entity.orientation)
-        rocket_polygon = translate_polygon(rocket_polygon, self.entity.position_of_center_of_gravity)
-        rocket_polygon = simulator.polygon_from_physical(rocket_polygon)
-        pygame.draw.polygon(simulator.window, color=self.color, points=make_pairs(rocket_polygon))
-        # pygame.draw.circle(simulator, (0, 0, 0),
-        #                    self.entity.position_of_center_of_gravity * simulator.scale
-        #                    + (1-self.rel_height_pressure_center) * self.)
+        polygon = self.polygon.translate(Vector(0, -self.height * self.rel_height_pressure_center))\
+            .rotate(self.orientation_in_entity)\
+            .translate(self.get_position_relative_to_center_of_gravity())\
+            .rotate(self.entity.orientation)\
+            .translate(self.entity.position_of_center_of_gravity).to_simulator(simulator)
+        pygame.draw.polygon(simulator.window, color=self.color, points=polygon)
 
 class Thruster(ComponentBase):
     def __init__(self, entity, position_in_entity, orientation_in_entity, input_functions=[], mass=1, max_thrust=1):
@@ -148,7 +142,7 @@ class Thruster(ComponentBase):
         
     def _compute_control_inputs(self):
         if len(self.input_functions) > 0:
-            self.throttle = self.input_functions[0]()
+            self.throttle = np.clip(self.input_functions[0](), 0, 1)
             self.propulsion_forces.append(Vector(0, self.throttle * self.max_thrust).rotate(self.orientation_in_entity).rotate(self.entity.orientation))
             self.sound.set_volume(0.5 * self.throttle)
         if len(self.input_functions) > 1:

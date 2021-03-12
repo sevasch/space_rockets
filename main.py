@@ -1,6 +1,7 @@
 from simulator import Simulator
 from entity_library import *
 from component_library import *
+from pid_controller import PIDController
 
 # TODO: first, do rockets only, implement aerodynamics a bit later with athmosphere
 
@@ -19,7 +20,7 @@ if '__main__' == __name__:
                         athmosphere_radius=200, athmosphere_density=1, athmosphere_color=(100, 100, 255), max_wind=0))
 
     # add other planets randomly
-    for i in range(6):
+    for i in range(4):
         radius = np.random.randint(5, 50)
         athmosphere_radius = radius + np.random.randint(100)
         position = Vector(np.random.randint(-RANGE, RANGE), np.random.randint(-RANGE, RANGE))
@@ -33,13 +34,17 @@ if '__main__' == __name__:
                                 athmosphere_radius=athmosphere_radius, athmosphere_density=np.random.rand() * 10, athmosphere_color=athmosphere_color,
                                 max_wind=np.random.randint(2) * np.random.randint(-20, 20)))
 
+    pid1 = PIDController(k_proportional=0.5, k_integral=0, k_derivative=0)
+    pid2 = PIDController(k_proportional=0, k_integral=0, k_derivative=0)
+    pid3 = PIDController(k_proportional=0, k_integral=0, k_derivative=0)
+    pid4 = PIDController(k_proportional=0, k_integral=0, k_derivative=0)
     s.add_entity(rocket := Rocket(position_init=Vector(0, -3), orientation_init=np.pi,
                                   mass=100, max_thrust=250, max_thrust_thrusters=100,
                                   height=2, diameter=0.3, rel_height_pressure_center=0.2,
                                   throttle_fn=lambda: -1 * (s.joystick.get_axis(3) - 1) / 2,
-                                  vector_fn=lambda: -s.joystick.get_axis(0) + rocket.velocity_angular,
-                                  thruster_left_fn=lambda: s.joystick.get_button(2),
-                                  thruster_right_fn=lambda: s.joystick.get_button(3)))
+                                  vector_fn=lambda: pid1.get(-rocket.velocity_angular, -s.joystick.get_axis(0)),
+                                  thruster_left_fn=lambda: s.joystick.get_button(2) + (1 if pid2.get(-rocket.velocity_angular, 0) > 0.3 else 0),
+                                  thruster_right_fn=lambda: s.joystick.get_button(3) + (1 if pid3.get(rocket.velocity_angular, 0) > 0.3 else 0)))
 
     s.track(rocket)
     s.run(60)
