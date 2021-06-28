@@ -1,3 +1,4 @@
+import pygame
 from simulator import Simulator
 from entity_library import *
 from component_library import *
@@ -7,10 +8,10 @@ from pid_controller import PIDController
 
 if '__main__' == __name__:
 
-    WINDOW_HEIGHT = 1300
-    WINDOW_WIDTH = 2000
+    WINDOW_HEIGHT = 800
+    WINDOW_WIDTH = 1200
 
-    RANGE = 1000
+    RANGE = 10000
 
     s = Simulator(window_size=(WINDOW_WIDTH, WINDOW_HEIGHT), scale_init=100)
     s.camera_center = Vector(0, 0)
@@ -20,7 +21,7 @@ if '__main__' == __name__:
                         athmosphere_radius=200, athmosphere_density=1, athmosphere_color=(100, 100, 255), max_wind=0))
 
     # add other planets randomly
-    for i in range(4):
+    for i in range(50):
         radius = np.random.randint(5, 50)
         athmosphere_radius = radius + np.random.randint(100)
         position = Vector(np.random.randint(-RANGE, RANGE), np.random.randint(-RANGE, RANGE))
@@ -41,10 +42,10 @@ if '__main__' == __name__:
     s.add_entity(rocket := Rocket(position_init=Vector(0, -3), orientation_init=np.pi,
                                   mass=100, max_thrust=250, max_thrust_thrusters=100,
                                   height=2, diameter=0.3, rel_height_pressure_center=0.2,
-                                  throttle_fn=lambda: -1 * (s.joystick.get_axis(3) - 1) / 2,
-                                  vector_fn=lambda: pid1.get(-rocket.velocity_angular, -s.joystick.get_axis(0)),
-                                  thruster_left_fn=lambda: s.joystick.get_button(2) + (1 if pid2.get(-rocket.velocity_angular, 0) > 0.3 else 0),
-                                  thruster_right_fn=lambda: s.joystick.get_button(3) + (1 if pid3.get(rocket.velocity_angular, 0) > 0.3 else 0)))
+                                  throttle_fn=lambda: (1 if pygame.key.get_pressed()[pygame.K_w] else 0),
+                                  vector_fn=lambda: pid1.get(-rocket.velocity_angular,0.5 if pygame.key.get_pressed()[pygame.K_a] else (-0.5 if pygame.key.get_pressed()[pygame.K_d] else 0)),
+                                  thruster_left_fn=lambda: (1 if pygame.key.get_pressed()[pygame.K_q] else 0) + (1 if pid2.get(-rocket.velocity_angular, 0) > 0.3 else 0),
+                                  thruster_right_fn=lambda: (1 if pygame.key.get_pressed()[pygame.K_e] else 0)  + (1 if pid3.get(rocket.velocity_angular, 0) > 0.3 else 0)))
 
     s.track(rocket)
     s.run(60)

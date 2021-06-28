@@ -5,7 +5,7 @@ from vector import Vector
 from polygon_shapes import *
 
 class EntityBase(ABC):
-    def __init__(self, position_init: Vector = Vector(), orientation_init=0, name='', fixed=False, can_crash=False):
+    def __init__(self, position_init: Vector = Vector(), orientation_init=0, name='', fixed=False, can_crash=False, forget_range=0):
         self.name = name
         self.position_of_center_of_gravity = position_init
         self.orientation = orientation_init  # rad
@@ -15,6 +15,7 @@ class EntityBase(ABC):
         self.fixed = fixed
         self.can_crash = can_crash
         self.is_crashed = False
+        self.forget_range = forget_range
 
         print('created entity at {}'.format(self.position_of_center_of_gravity))
 
@@ -104,4 +105,3 @@ class EntityBase(ABC):
                 for j in range(i+1):
                     pygame.draw.circle(simulator.window, (255, 255 - 20*i, 0), simulator.position_from_physical(self.position_of_center_of_gravity + Vector(x_offset, y_offset) * explosion_radius_init * 0.5).get(), simulator.scale * explosion_radius)
                 explosion_radius *= 0.5
-

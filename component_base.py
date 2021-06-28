@@ -84,12 +84,12 @@ class ComponentBase(ABC):
     def update(self, simulator):
         self._play_sound()
 
-        # check for interaction with environment
         self._reset_forces()
         self._compute_control_inputs()
 
+        # check for interaction with environment
         for entity in simulator.entities:
-            if not entity == self.entity:
+            if not entity == self.entity and (entity.forget_range + self.entity.forget_range > self.entity.get_distance_to(entity)):
                 for component in entity.components:
                     if not component == self:
                         d_position = self.get_relative_position_of(component)
@@ -109,7 +109,7 @@ class ComponentBase(ABC):
                             penetration_depth = np.abs(bounding_distance) if bounding_distance < 0 else 0
 
                             velocity_radial = d_velocity.dot(d_position) / d_position.norm()
-                            velocity_tangential = d_velocity.dot(d_position.rotate(np.pi/2)) / d_position.norm()
+                            # velocity_tangential = d_velocity.dot(d_position.rotate(np.pi/2)) / d_position.norm()
 
                             # if hasattr(self, 'length'):
                             #     print(velocity_tangential)

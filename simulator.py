@@ -7,7 +7,7 @@ class Simulator:
         self.entities = []
         self.camera_center = Vector()
         self.window_size = window_size
-        self.scale_min = 1
+        self.scale_min = 1e-3
         self.scale_max = 1000
         self.scale = scale_init
         self.auto_scale = False
@@ -40,8 +40,8 @@ class Simulator:
 
     def run(self, fps=60):
         # pygame.mixer.music.play(-1)  # If the loops is -1 then the music will repeat indefinitely.
-        self.joystick = pygame.joystick.Joystick(0)
-        self.joystick.init()
+        # self.joystick = pygame.joystick.Joystick(0)
+        # self.joystick.init()
         self.window = pygame.display.set_mode((self.window_size[0], self.window_size[1]))
         clock = pygame.time.Clock()
         running = True
@@ -53,13 +53,13 @@ class Simulator:
                     running = False
 
             keys = pygame.key.get_pressed()
-            if keys[pygame.K_PERIOD] or self.joystick.get_button(4):
+            if keys[pygame.K_PERIOD]:# or self.joystick.get_button(4):
                 self.zoom_out()
 
-            if keys[pygame.K_COMMA] or self.joystick.get_button(9):
+            if keys[pygame.K_COMMA]:# or self.joystick.get_button(9):
                 self.zoom_in()
 
-            if keys[pygame.K_a]:
+            if keys[pygame.K_n]:
                 self.auto_scale = True
 
             if keys[pygame.K_m]:
